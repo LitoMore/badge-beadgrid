@@ -170,8 +170,8 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .color-row small { color: #a1988e; font: 400 8px "DM Mono", monospace; }
 .color-row strong { color: #655d55; font: 500 10px "DM Mono", monospace; }
 
-.export-group { margin-top: auto; }
-.export-group .panel-heading { margin-bottom: 13px; }
+.export-group { margin-top: 0; background: linear-gradient(135deg, rgba(242, 112, 89, .055), transparent 72%); }
+.export-group .panel-heading { margin-bottom: 10px; }
 .download-main { display: grid; grid-template-columns: 28px 1fr auto; align-items: center; width: 100%; min-height: 56px; padding: 0 12px; border: 0; border-radius: 9px; background: var(--coral); color: white; cursor: pointer; text-align: left; box-shadow: inset 0 -4px 0 rgba(117,37,27,.18), 0 5px 12px rgba(196,73,54,.16); }
 .download-main:hover { background: #e7604b; transform: translateY(-1px); }
 .download-main:disabled, .export-secondary button:disabled { opacity: .5; cursor: default; }
@@ -217,6 +217,19 @@ footer a:hover { color: var(--coral); }
 :root[data-theme="dark"] .export-secondary button, :root[data-theme="dark"] .export-secondary a { border-color: #554a43; color: #c1b5aa; }
 :root[data-theme="dark"] footer { color: #9f9389; }
 :root[data-theme="dark"] footer a { color: #d4c8bc; }
+
+@media (min-width: 761px) {
+  .app-shell { padding-top: 12px; padding-bottom: 16px; }
+  .site-header { min-height: 46px; margin-bottom: 10px; }
+  .workbench { grid-template-rows: auto clamp(500px, calc(100vh - 300px), 600px); }
+  .input-panel { padding-top: 20px; padding-bottom: 20px; }
+  .pegboard-wrap { min-height: 0; }
+  .tools-panel { overflow-y: auto; }
+  .tool-group { padding-top: 15px; padding-bottom: 15px; }
+  .setting-block { margin-top: 10px; padding-top: 11px; padding-bottom: 9px; }
+  .color-list { max-height: 140px; }
+  footer { margin-top: 16px; }
+}
 
 @media (max-width: 980px) {
   .workbench { grid-template-columns: minmax(0, 1.35fr) minmax(285px, .75fr); }
