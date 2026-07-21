@@ -183,10 +183,11 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .export-secondary button:hover, .export-secondary a:hover { border-color: var(--coral); color: var(--coral); }
 .export-secondary button span { color: #aaa097; font-size: 7px; }
 
-footer { max-width: 1440px; margin: 24px auto 0; color: #978e84; font: 400 10px/1.6 "DM Mono", monospace; text-align: center; }
+footer { display: grid; gap: 3px; max-width: 1440px; margin: 24px auto 0; color: #978e84; font: 400 10px/1.6 "DM Mono", monospace; text-align: center; }
 .footer-bead { display: inline-block; width: 10px; height: 10px; margin: 0 2px; border-radius: 50%; background: var(--coral); vertical-align: -1px; -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 24%); mask: radial-gradient(circle, transparent 0 22%, #000 24%); }
 footer a { color: #5f5851; text-underline-offset: 3px; }
 footer a:hover { color: var(--coral); }
+.badge3d-accent { color: var(--coral); }
 .spin { animation: spin 1s linear infinite; }
 @keyframes spin { to { transform: rotate(360deg); } }
 
