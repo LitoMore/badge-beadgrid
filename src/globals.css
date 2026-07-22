@@ -56,7 +56,6 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
   max-width: 1440px;
   min-height: 50px;
   margin: 0 auto 14px;
-  border-bottom: 1px solid var(--line);
   gap: 24px;
 }
 .brand { display: inline-flex; align-items: center; gap: 9px; color: var(--ink); font-size: 14px; font-weight: 900; line-height: .9; letter-spacing: -.02em; text-decoration: none; text-transform: uppercase; }
