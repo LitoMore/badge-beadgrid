@@ -15,7 +15,6 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { PRO_FONT, proFontPixel } from "./profont";
 
 const DEFAULT_URL = "https://img.shields.io/badge/build-passing-38b000";
-const DEFAULT_SVG = `<svg xmlns="http://www.w3.org/2000/svg" width="88" height="20" role="img" aria-label="build: passing"><title>build: passing</title><linearGradient id="s" x2="0" y2="100%"><stop offset="0" stop-color="#bbb" stop-opacity=".1"/><stop offset="1" stop-opacity=".1"/></linearGradient><clipPath id="r"><rect width="88" height="20" rx="3"/></clipPath><g clip-path="url(#r)"><rect width="37" height="20" fill="#555"/><rect x="37" width="51" height="20" fill="#38b000"/><rect width="88" height="20" fill="url(#s)"/></g><g fill="#fff" text-anchor="middle" font-family="Verdana,Arial,sans-serif" font-size="11"><text x="18.5" y="14" textLength="27">build</text><text x="62.5" y="14" textLength="41">passing</text></g></svg>`;
 
 const EXAMPLES = [
   ["BUILD", DEFAULT_URL],
@@ -98,6 +97,16 @@ function colorDistance(a: Rgb, b: Rgb) {
 
 function readableColorName(index: number) {
   return `Badge ${String(index + 1).padStart(2, "0")}`;
+}
+
+async function fetchBadgeSvg(requestedUrl: string) {
+  const parsed = new URL(requestedUrl);
+  if (!/^https?:$/.test(parsed.protocol)) throw new Error("Please use an HTTP or HTTPS badge URL.");
+  const response = await fetch(parsed.toString(), { headers: { Accept: "image/svg+xml" } });
+  if (!response.ok) throw new Error(`Shields.io returned ${response.status}. Check the badge URL and try again.`);
+  const svg = await response.text();
+  if (!svg.trim().startsWith("<svg") && !svg.includes("<svg")) throw new Error("That URL did not return an SVG badge.");
+  return { svg, url: parsed.toString() };
 }
 
 function normalizeCssColor(value: string) {
@@ -753,10 +762,10 @@ function BeadLogo() {
 export function BeadgridApp() {
   const [input, setInput] = useState(DEFAULT_URL);
   const [activeUrl, setActiveUrl] = useState(DEFAULT_URL);
-  const [svg, setSvg] = useState(DEFAULT_SVG);
+  const [svg, setSvg] = useState("");
   const [rows, setRows] = useState(20);
   const [pattern, setPattern] = useState<Pattern | null>(null);
-  const [status, setStatus] = useState("crafting");
+  const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
   const [theme, setTheme] = useState<ColorTheme>(() => {
     const savedTheme = window.localStorage.getItem("badge-beadgrid-theme");
@@ -785,19 +794,31 @@ export function BeadgridApp() {
     setStatus("loading");
     setError("");
     try {
-      const parsed = new URL(requestedUrl);
-      if (!/^https?:$/.test(parsed.protocol)) throw new Error("Please use an HTTP or HTTPS badge URL.");
-      const response = await fetch(parsed.toString(), { headers: { Accept: "image/svg+xml" } });
-      if (!response.ok) throw new Error(`Shields.io returned ${response.status}. Check the badge URL and try again.`);
-      const result = await response.text();
-      if (!result.trim().startsWith("<svg") && !result.includes("<svg")) throw new Error("That URL did not return an SVG badge.");
-      setSvg(result);
-      setActiveUrl(parsed.toString());
+      const result = await fetchBadgeSvg(requestedUrl);
+      setSvg(result.svg);
+      setActiveUrl(result.url);
       setStatus("crafting");
     } catch (reason) {
       setStatus("error");
       setError(reason instanceof Error ? reason.message : "The badge could not be loaded.");
     }
+  }, []);
+
+  useEffect(() => {
+    let current = true;
+    void fetchBadgeSvg(DEFAULT_URL)
+      .then((result) => {
+        if (!current) return;
+        setSvg(result.svg);
+        setActiveUrl(result.url);
+        setStatus("crafting");
+      })
+      .catch((reason: unknown) => {
+        if (!current) return;
+        setStatus("error");
+        setError(reason instanceof Error ? reason.message : "The badge could not be loaded.");
+      });
+    return () => { current = false; };
   }, []);
 
   useEffect(() => {
@@ -854,13 +875,7 @@ export function BeadgridApp() {
 
   const chooseExample = (url: string) => {
     setInput(url);
-    if (url === DEFAULT_URL) {
-      setSvg(DEFAULT_SVG);
-      setActiveUrl(url);
-      setStatus("crafting");
-    } else {
-      void loadBadge(url);
-    }
+    void loadBadge(url);
   };
 
   const exportPng = () => {
