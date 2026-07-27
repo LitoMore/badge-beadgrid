@@ -1,4 +1,6 @@
-# Badge Beadgrid
+<p align="center">
+  <img src="public/banner.webp" alt="Badge Beadgrid" width="640" />
+</p>
 
 Badge Beadgrid is a Vite + React SPA that turns Shields.io SVG badge URLs into fuse bead patterns. Badge fetching, palette matching, previewing, and PNG/SVG export all run in the browser.
 
