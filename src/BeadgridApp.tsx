@@ -407,6 +407,7 @@ async function renderLogoPixels(
   rows: number,
   svgWidth: number,
   svgHeight: number,
+  verticalOffset: number,
 ) {
   const logoPixels: Array<Rgb | undefined> = new Array(columns * rows);
   if (logos.length === 0) return logoPixels;
@@ -432,7 +433,7 @@ async function renderLogoPixels(
     context.drawImage(
       image,
       gridLeft,
-      (logo.y * logo.scaleY * rows) / svgHeight,
+      (logo.y * logo.scaleY * rows) / svgHeight + verticalOffset,
       gridRight - gridLeft,
       (logo.height * logo.scaleY * rows) / svgHeight,
     );
@@ -542,7 +543,12 @@ function renderProFont(
   return pixels;
 }
 
-async function makePattern(svg: string, rows: number, textVerticalOffset: number): Promise<Pattern> {
+async function makePattern(
+  svg: string,
+  rows: number,
+  textVerticalOffset: number,
+  logoVerticalOffset: number,
+): Promise<Pattern> {
   const { renderSvg, paletteSvg, textRuns, segments, logos } = prepareBadgeSvg(svg);
   const { width, height } = svgDimensions(renderSvg);
   const layout = layoutBadge(textRuns, segments, rows, width, height);
@@ -599,6 +605,7 @@ async function makePattern(svg: string, rows: number, textVerticalOffset: number
     rows,
     width,
     height,
+    logoVerticalOffset,
   );
   const paletteColors = sourcePalette(paletteSvg);
   logoPixels.forEach((pixel) => {
@@ -776,6 +783,7 @@ export function BeadgridApp() {
   const [svg, setSvg] = useState("");
   const [rows, setRows] = useState(DEFAULT_ROWS);
   const [textVerticalOffset, setTextVerticalOffset] = useState(0);
+  const [logoVerticalOffset, setLogoVerticalOffset] = useState(0);
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [status, setStatus] = useState("loading");
   const [error, setError] = useState("");
@@ -836,7 +844,7 @@ export function BeadgridApp() {
   useEffect(() => {
     if (!svg) return;
     let current = true;
-    void makePattern(svg, rows, textVerticalOffset)
+    void makePattern(svg, rows, textVerticalOffset, logoVerticalOffset)
       .then((nextPattern) => {
         if (!current) return;
         setPattern(nextPattern);
@@ -849,7 +857,7 @@ export function BeadgridApp() {
         setError(reason instanceof Error ? reason.message : "The pattern could not be created.");
       });
     return () => { current = false; };
-  }, [svg, rows, textVerticalOffset]);
+  }, [svg, rows, textVerticalOffset, logoVerticalOffset]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -964,7 +972,7 @@ export function BeadgridApp() {
           <div className="tool-group settings-group">
             <div className="panel-heading">
               <div><span><small>MAKE IT YOURS</small><b>Pattern settings</b></span></div>
-              <button className="icon-button" type="button" title="Reset settings" onClick={() => { setRows(DEFAULT_ROWS); setTextVerticalOffset(0); }}><RefreshCcw size={15} /></button>
+              <button className="icon-button" type="button" title="Reset settings" onClick={() => { setRows(DEFAULT_ROWS); setTextVerticalOffset(0); setLogoVerticalOffset(0); }}><RefreshCcw size={15} /></button>
             </div>
             <div className="settings-grid">
               <div className="setting-block">
@@ -972,26 +980,48 @@ export function BeadgridApp() {
                 <input id="detail" type="range" min="12" max="32" value={rows} onChange={(event) => setRows(Number(event.target.value))} style={{ "--progress": `${((rows - 12) / 20) * 100}%` } as React.CSSProperties} />
                 <div className="range-ends"><span>chunky</span><span>detailed</span></div>
               </div>
-              <div className="setting-block text-nudge-block">
-                <label><span>TEXT OFFSET</span><output>{textVerticalOffset > 0 ? `+${textVerticalOffset}` : textVerticalOffset}</output></label>
-                <div className="text-nudge-control" role="group" aria-label="Adjust text vertical position">
-                  <button
-                    type="button"
-                    onClick={() => setTextVerticalOffset((offset) => Math.max(-6, offset - 1))}
-                    disabled={textVerticalOffset <= -6}
-                    aria-label="Move all text up one unit"
-                    title="Move all text up one unit"
-                  ><ArrowUp size={15} /></button>
-                  <strong aria-live="polite">{textVerticalOffset > 0 ? `+${textVerticalOffset}` : textVerticalOffset}</strong>
-                  <button
-                    type="button"
-                    onClick={() => setTextVerticalOffset((offset) => Math.min(6, offset + 1))}
-                    disabled={textVerticalOffset >= 6}
-                    aria-label="Move all text down one unit"
-                    title="Move all text down one unit"
-                  ><ArrowDown size={15} /></button>
+              <div className="setting-block offset-settings-block">
+                <div className="offset-setting-row">
+                  <span>TEXT</span>
+                  <div className="offset-control" role="group" aria-label="Adjust text vertical position">
+                    <button
+                      type="button"
+                      onClick={() => setTextVerticalOffset((offset) => Math.max(-6, offset - 1))}
+                      disabled={textVerticalOffset <= -6}
+                      aria-label="Move all text up one unit"
+                      title="Move all text up one unit"
+                    ><ArrowUp size={14} /></button>
+                    <strong aria-live="polite">{textVerticalOffset > 0 ? `+${textVerticalOffset}` : textVerticalOffset}</strong>
+                    <button
+                      type="button"
+                      onClick={() => setTextVerticalOffset((offset) => Math.min(6, offset + 1))}
+                      disabled={textVerticalOffset >= 6}
+                      aria-label="Move all text down one unit"
+                      title="Move all text down one unit"
+                    ><ArrowDown size={14} /></button>
+                  </div>
                 </div>
-                <div className="text-nudge-note">1 row / step</div>
+                <div className="offset-setting-row">
+                  <span>LOGO</span>
+                  <div className="offset-control" role="group" aria-label="Adjust logo vertical position">
+                    <button
+                      type="button"
+                      onClick={() => setLogoVerticalOffset((offset) => Math.max(-6, offset - 1))}
+                      disabled={logoVerticalOffset <= -6}
+                      aria-label="Move the logo up one unit"
+                      title="Move the logo up one unit"
+                    ><ArrowUp size={14} /></button>
+                    <strong aria-live="polite">{logoVerticalOffset > 0 ? `+${logoVerticalOffset}` : logoVerticalOffset}</strong>
+                    <button
+                      type="button"
+                      onClick={() => setLogoVerticalOffset((offset) => Math.min(6, offset + 1))}
+                      disabled={logoVerticalOffset >= 6}
+                      aria-label="Move the logo down one unit"
+                      title="Move the logo down one unit"
+                    ><ArrowDown size={14} /></button>
+                  </div>
+                </div>
+                <div className="offset-note">1 row / step</div>
               </div>
             </div>
             <div className="bead-style-note"><i /><span><b>Original badge colors</b><small>Solid beads with a hollow center</small></span></div>

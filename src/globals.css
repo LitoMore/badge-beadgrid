@@ -153,12 +153,15 @@ button:focus-visible, input:focus-visible, a:focus-visible { outline: 3px solid 
 .setting-block input[type="range"]::-moz-range-thumb { width: 10px; height: 10px; border: 3px solid #fffaf0; border-radius: 50%; background: var(--coral); }
 .range-ends { display: flex; justify-content: space-between; color: #aaa197; font: 400 10px "DM Mono", monospace; }
 .settings-grid { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 12px; }
-.text-nudge-control { display: grid; grid-template-columns: 1fr 44px 1fr; align-items: stretch; overflow: hidden; border: 1px solid var(--line); border-radius: 8px; background: var(--cream); }
-.text-nudge-control button { display: inline-flex; height: 34px; align-items: center; justify-content: center; padding: 0 6px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
-.text-nudge-control button:hover:not(:disabled) { background: var(--cream-2); color: var(--coral); }
-.text-nudge-control button:disabled { opacity: .35; cursor: default; }
-.text-nudge-control strong { display: grid; min-width: 44px; place-items: center; border-right: 1px solid var(--line); border-left: 1px solid var(--line); color: var(--ink); font: 700 11px "DM Mono", monospace; }
-.text-nudge-note { margin-top: 5px; color: #aaa197; font: 400 9px "DM Mono", monospace; text-align: center; }
+.offset-settings-block { display: grid; align-content: start; gap: 5px; }
+.offset-setting-row { display: grid; grid-template-columns: auto minmax(76px, 1fr); align-items: center; gap: 7px; }
+.offset-setting-row > span { color: var(--muted); font: 500 10px "DM Mono", monospace; letter-spacing: .08em; }
+.offset-control { display: grid; grid-template-columns: 1fr 28px 1fr; align-items: stretch; overflow: hidden; border: 1px solid var(--line); border-radius: 7px; background: var(--cream); }
+.offset-control button { display: inline-flex; height: 27px; align-items: center; justify-content: center; padding: 0 4px; border: 0; background: transparent; color: var(--muted); cursor: pointer; }
+.offset-control button:hover:not(:disabled) { background: var(--cream-2); color: var(--coral); }
+.offset-control button:disabled { opacity: .35; cursor: default; }
+.offset-control strong { display: grid; min-width: 28px; place-items: center; border-right: 1px solid var(--line); border-left: 1px solid var(--line); color: var(--ink); font: 700 10px "DM Mono", monospace; }
+.offset-note { color: #aaa197; font: 400 9px "DM Mono", monospace; text-align: right; }
 .bead-style-note { display: flex; align-items: center; gap: 9px; padding: 10px 11px; border-radius: 9px; background: var(--cream-2); }
 .bead-style-note > i { width: 22px; height: 22px; flex: 0 0 auto; border-radius: 50%; background: var(--mint); -webkit-mask: radial-gradient(circle, transparent 0 22%, #000 24%); mask: radial-gradient(circle, transparent 0 22%, #000 24%); }
 .bead-style-note > span { display: grid; gap: 1px; }
