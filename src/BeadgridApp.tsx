@@ -17,6 +17,7 @@ import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "re
 import { PRO_FONT, proFontPixel } from "./profont";
 
 const DEFAULT_URL = "https://img.shields.io/badge/build-passing-38b000";
+const DEFAULT_ROWS = 16;
 
 const EXAMPLES = [
   ["BUILD", DEFAULT_URL],
@@ -773,7 +774,7 @@ export function BeadgridApp() {
   const [input, setInput] = useState(DEFAULT_URL);
   const [activeUrl, setActiveUrl] = useState(DEFAULT_URL);
   const [svg, setSvg] = useState("");
-  const [rows, setRows] = useState(20);
+  const [rows, setRows] = useState(DEFAULT_ROWS);
   const [textVerticalOffset, setTextVerticalOffset] = useState(0);
   const [pattern, setPattern] = useState<Pattern | null>(null);
   const [status, setStatus] = useState("loading");
@@ -963,7 +964,7 @@ export function BeadgridApp() {
           <div className="tool-group settings-group">
             <div className="panel-heading">
               <div><span><small>MAKE IT YOURS</small><b>Pattern settings</b></span></div>
-              <button className="icon-button" type="button" title="Reset settings" onClick={() => { setRows(20); setTextVerticalOffset(0); }}><RefreshCcw size={15} /></button>
+              <button className="icon-button" type="button" title="Reset settings" onClick={() => { setRows(DEFAULT_ROWS); setTextVerticalOffset(0); }}><RefreshCcw size={15} /></button>
             </div>
             <div className="settings-grid">
               <div className="setting-block">
