@@ -984,7 +984,7 @@ export function BeadgridApp() {
 
       <footer>
         <span>Crafted and maintained with <span className="footer-bead" aria-label="love" /> by <a href="https://github.com/LitoMore">LitoMore</a>, a member of the <a href="https://shields.io">Shields.io</a> team.</span>
-        <span>Like badges? Check out another fun project - <a href="https://badge3d.litomore.me" target="_blank" rel="noreferrer">Badge<span className="badge3d-accent">3D</span></a>.</span>
+        <span>Like badges? Check out another fun project - <a href="https://3d.shields.io" target="_blank" rel="noreferrer">Badge<span className="badge3d-accent">3D</span></a>.</span>
       </footer>
     </main>
   );
