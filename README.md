@@ -4,6 +4,8 @@
 
 Badge Beadgrid is a Vite + React SPA that turns Shields.io SVG badge URLs into fuse bead patterns. Badge fetching, palette matching, previewing, and PNG/SVG export all run in the browser.
 
+Click **Copy shareable link** below the URL input to share the current badge URL. Opening the link automatically loads that badge with the default pattern settings.
+
 ## Development
 
 ```sh

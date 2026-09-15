@@ -1,17 +1,20 @@
 import {
   ArrowDown,
   ArrowUp,
+  Check,
   ChevronRight,
   Code2,
   Download,
   ExternalLink,
   Grid3X3,
   ImageDown,
+  Link,
   LoaderCircle,
   Monitor,
   Moon,
   RefreshCcw,
   Sun,
+  TriangleAlert,
 } from "lucide-react";
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PRO_FONT, proFontPixel } from "./profont";
@@ -778,9 +781,14 @@ function BeadLogo() {
 }
 
 export function BeadgridApp() {
-  const [input, setInput] = useState(DEFAULT_URL);
-  const [activeUrl, setActiveUrl] = useState(DEFAULT_URL);
-  const [svg, setSvg] = useState("");
+  const [initialBadgeUrl] = useState(() => (
+    new URLSearchParams(window.location.search).get("badgeUrl")?.trim() || DEFAULT_URL
+  ));
+  const [input, setInput] = useState(initialBadgeUrl);
+  const [activeUrl, setActiveUrl] = useState(initialBadgeUrl);
+  const [shareFeedback, setShareFeedback] = useState({ url: "", message: "" });
+  const shareMessage = shareFeedback.url === input ? shareFeedback.message : "";
+  const [badgeSource, setBadgeSource] = useState<{ svg: string } | null>(null);
   const [rows, setRows] = useState(DEFAULT_ROWS);
   const [textVerticalOffset, setTextVerticalOffset] = useState(0);
   const [logoVerticalOffset, setLogoVerticalOffset] = useState(0);
@@ -815,7 +823,7 @@ export function BeadgridApp() {
     setError("");
     try {
       const result = await fetchBadgeSvg(requestedUrl);
-      setSvg(result.svg);
+      setBadgeSource(result);
       setActiveUrl(result.url);
       setStatus("crafting");
     } catch (reason) {
@@ -825,11 +833,18 @@ export function BeadgridApp() {
   }, []);
 
   useEffect(() => {
+    if (new URLSearchParams(window.location.search).has("badgeUrl")) {
+      window.history.replaceState(
+        window.history.state,
+        "",
+        window.location.pathname + window.location.hash,
+      );
+    }
     let current = true;
-    void fetchBadgeSvg(DEFAULT_URL)
+    void fetchBadgeSvg(initialBadgeUrl)
       .then((result) => {
         if (!current) return;
-        setSvg(result.svg);
+        setBadgeSource(result);
         setActiveUrl(result.url);
         setStatus("crafting");
       })
@@ -839,12 +854,22 @@ export function BeadgridApp() {
         setError(reason instanceof Error ? reason.message : "The badge could not be loaded.");
       });
     return () => { current = false; };
-  }, []);
+  }, [initialBadgeUrl]);
 
   useEffect(() => {
-    if (!svg) return;
+    if (shareFeedback.message !== "Link copied!") return;
+    const timeout = window.setTimeout(
+      () => setShareFeedback({ url: "", message: "" }),
+      2000,
+    );
+    return () => window.clearTimeout(timeout);
+  }, [shareFeedback]);
+
+  useEffect(() => {
+    if (!badgeSource) return;
     let current = true;
-    void makePattern(svg, rows, textVerticalOffset, logoVerticalOffset)
+    // Each successful fetch creates a new source, even when its SVG is unchanged.
+    void makePattern(badgeSource.svg, rows, textVerticalOffset, logoVerticalOffset)
       .then((nextPattern) => {
         if (!current) return;
         setPattern(nextPattern);
@@ -857,7 +882,7 @@ export function BeadgridApp() {
         setError(reason instanceof Error ? reason.message : "The pattern could not be created.");
       });
     return () => { current = false; };
-  }, [svg, rows, textVerticalOffset, logoVerticalOffset]);
+  }, [badgeSource, rows, textVerticalOffset, logoVerticalOffset]);
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -891,6 +916,24 @@ export function BeadgridApp() {
   const submit = (event: FormEvent) => {
     event.preventDefault();
     void loadBadge(input.trim());
+  };
+
+  const copyShareableLink = async () => {
+    try {
+      const parsed = new URL(input.trim());
+      if (!/^https?:$/.test(parsed.protocol)) throw new Error("Invalid protocol");
+    } catch {
+      setShareFeedback({ url: input, message: "Enter an HTTP or HTTPS badge URL to share." });
+      return;
+    }
+    const shareUrl = new URL(window.location.pathname, window.location.origin);
+    shareUrl.searchParams.set("badgeUrl", input.trim());
+    try {
+      await navigator.clipboard.writeText(shareUrl.href);
+      setShareFeedback({ url: input, message: "Link copied!" });
+    } catch {
+      setShareFeedback({ url: input, message: "Unable to copy. Please try again." });
+    }
   };
 
   const chooseExample = (url: string) => {
@@ -943,22 +986,56 @@ export function BeadgridApp() {
             <p>Paste a badge URL and turn its original colors into a fuse-bead pattern.</p>
           </div>
           <form className="badge-form" onSubmit={submit}>
-            <label htmlFor="badge-url">YOUR SHIELDS.IO BADGE URL</label>
+            <div className="url-label-row">
+              <label htmlFor="badge-url">YOUR SHIELDS.IO BADGE URL</label>
+            </div>
             <div className="url-control">
               <input id="badge-url" value={input} onChange={(event) => setInput(event.target.value)} spellCheck="false" aria-describedby={error ? "url-error" : undefined} />
-              <button type="submit" disabled={status === "loading"}><span>{status === "loading" ? "FETCHING" : "MAKE IT"}</span>{status === "loading" ? <LoaderCircle className="spin" size={18} /> : <ChevronRight size={19} />}</button>
+              <button type="submit" disabled={status === "loading" || status === "crafting"}>
+                <span aria-live="polite">{status === "loading" ? "FETCHING" : status === "crafting" ? "CRAFTING" : "MAKE IT"}</span>
+                {status === "loading" || status === "crafting" ? <LoaderCircle className="spin" size={18} aria-hidden="true" /> : <ChevronRight size={19} aria-hidden="true" />}
+              </button>
             </div>
             <div className="form-meta">
               <div className="examples"><span>TRY ONE:</span>{EXAMPLES.map(([label, url]) => <button key={label} type="button" className={activeUrl === url ? "active" : ""} onClick={() => chooseExample(url)}>{label}</button>)}</div>
-              <span className={`load-state ${status}`} id={error ? "url-error" : undefined}>{error || (status === "ready" ? "Pattern ready!" : "SVG stays in your browser")}</span>
+              <div className="share-link-row">
+                <button
+                  type="button"
+                  onClick={copyShareableLink}
+                  disabled={!input.trim()}
+                  aria-describedby={shareMessage ? "share-feedback" : undefined}
+                >
+                  {shareMessage === "Link copied!" ? (
+                    <Check aria-hidden="true" size={12} />
+                  ) : shareMessage ? (
+                    <TriangleAlert aria-hidden="true" size={12} />
+                  ) : (
+                    <Link aria-hidden="true" size={12} />
+                  )}
+                  Copy shareable link
+                </button>
+                {shareMessage && shareMessage !== "Link copied!" && (
+                  <div className="share-tooltip" role="tooltip">{shareMessage}</div>
+                )}
+              </div>
             </div>
+            <div className="share-feedback" id="url-error" role="alert">{error}</div>
+            <div id="share-feedback" className="share-feedback" role="status">{shareMessage}</div>
           </form>
         </div>
 
         <div className="preview-panel panel">
           <div className="panel-heading preview-heading">
             <div><span><small>YOUR PATTERN</small><b>Beadboard preview</b></span></div>
-            {pattern && <span className="grid-size"><Grid3X3 size={14} /> {pattern.columns} × {pattern.rows} GRID</span>}
+            {error ? (
+              <div className="preview-error">
+                <button type="button" aria-label="Badge error details" aria-describedby="url-error">
+                  <TriangleAlert size={15} aria-hidden="true" />
+                  <span>{error}</span>
+                </button>
+                <div className="preview-error-tooltip" role="tooltip">{error}</div>
+              </div>
+            ) : pattern && <span className="grid-size"><Grid3X3 size={14} /> {pattern.columns} × {pattern.rows} GRID</span>}
           </div>
           <div className="pegboard-wrap">
             <div className="pegboard" ref={pegboardRef}>
