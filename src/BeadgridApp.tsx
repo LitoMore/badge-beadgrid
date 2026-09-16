@@ -19,13 +19,13 @@ import {
 import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PRO_FONT, proFontPixel } from "./profont";
 
-const DEFAULT_URL = "https://img.shields.io/badge/build-passing-44BB00";
+const DEFAULT_URL = "https://img.shields.io/badge/build-passing-brightgreen";
 const DEFAULT_ROWS = 16;
 
 const EXAMPLES = [
   ["BUILD", DEFAULT_URL],
-  ["COVERAGE", "https://img.shields.io/badge/coverage-100%25-44BB00"],
-  ["VERSION", "https://img.shields.io/badge/version-v2.4.1-007EC6"],
+  ["COVERAGE", "https://img.shields.io/badge/coverage-100%25-brightgreen"],
+  ["VERSION", "https://img.shields.io/badge/version-v2.4.1-blue"],
 ] as const;
 
 type Rgb = { r: number; g: number; b: number };
