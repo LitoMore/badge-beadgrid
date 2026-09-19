@@ -26,6 +26,7 @@ const EXAMPLES = [
   ["BUILD", DEFAULT_URL],
   ["COVERAGE", "https://img.shields.io/badge/coverage-100%25-brightgreen"],
   ["VERSION", "https://img.shields.io/badge/version-v2.4.1-blue"],
+  ["JSR", "https://jsr.io/badges/@std/path"],
 ] as const;
 
 type Rgb = { r: number; g: number; b: number };
